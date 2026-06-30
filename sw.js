@@ -1,4 +1,4 @@
-const CACHE_NAME = 'talbaktem-v101';
+const CACHE_NAME = 'talbaktem-v102';
 const STATIC_ASSETS = [
   './',
   '/index.html',
@@ -68,42 +68,6 @@ self.addEventListener('fetch', e => {
         return res;
       }).catch(() => cached);
       return cached || net;
-    })
-  );
-});
-
-// ===== إشعارات Push (إعلانات جديدة) =====
-self.addEventListener('push', event => {
-  let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch (_) { data = { body: (event.data && event.data.text()) || '' }; }
-  const title = data.title || 'طلبك تم';
-  const options = {
-    body: data.body || 'إعلان جديد على طلبك تم',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    dir: 'rtl',
-    lang: 'ar',
-    tag: data.tag || ('ad-' + (data.adId || Date.now())),
-    renotify: true,
-    data: { url: data.url || '/' }
-  };
-  event.waitUntil(Promise.all([
-    self.registration.showNotification(title, options),
-    // نقطة حمراء على أيقونة التطبيق (حيثما يُدعم)
-    (self.navigator && self.navigator.setAppBadge) ? self.navigator.setAppBadge().catch(() => {}) : Promise.resolve()
-  ]));
-});
-
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  if (self.navigator && self.navigator.clearAppBadge) { try { self.navigator.clearAppBadge(); } catch (e) {} }
-  const target = (event.notification.data && event.notification.data.url) || '/';
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const c of list) {
-        if ('focus' in c) { try { c.navigate(target); } catch (_) {} return c.focus(); }
-      }
-      if (self.clients.openWindow) return self.clients.openWindow(target);
     })
   );
 });
