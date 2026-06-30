@@ -2099,6 +2099,10 @@ textarea.form-input{resize:vertical;min-height:90px}
 .terms-agree-one{margin:12px 0 6px;padding-top:14px;border-top:1px solid #eef1f5}
 .terms-agree-one .fa-term{align-items:flex-start}
 .terms-note{font-size:12px;color:#64748b;font-weight:600;line-height:1.7;margin:12px 0 6px;padding-top:12px;border-top:1px solid #eef1f5}
+/* قبل القراءة: المربّع معطّل + تلميح أحمر */
+.terms-agree-one .fa-term input:disabled{cursor:not-allowed}
+.terms-agree-one .fa-term input:disabled + span{opacity:.55}
+.terms-readhint{font-size:11.5px;color:#e11d48;font-weight:700;margin-top:7px;padding-right:2px}
 .terms-link{color:#F6921E;font-weight:800;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 /* نافذة عرض الشروط الكاملة لفورمات النشر */
 .pub-terms-ov{position:fixed;inset:0;z-index:10200;background:rgba(15,23,42,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;direction:rtl;font-family:inherit}

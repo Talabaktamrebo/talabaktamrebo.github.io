@@ -2474,13 +2474,13 @@ var FREE_TERMS=[
   'أوافق على حقّ الإدارة في تحديد عدد الإعلانات المجانية شهرياً، وحذف الإعلان أو حظر الحساب عند المخالفة أو الشكاوى.',
   'أوافق على أن هذه الشروط قد تتغيّر وتسري فور نشرها.'
 ];
-function openFreeAdTermsModal(){ openTermsModal(termsListHTML('شروط النشر في «مهن وخدمات»', FREE_TERMS)); }
+function openFreeAdTermsModal(){ openTermsModal(termsListHTML('شروط النشر في «مهن وخدمات»', FREE_TERMS), 'شروط النشر وسياسة الخصوصية', function(){ markTermsRead('freead'); }); }
 window.openFreeAdTermsModal=openFreeAdTermsModal;
 function renderFreeAdTerms(){
   var box=document.getElementById('freeAdTerms'); if(!box) return;
-  // يجب وضع ✓ على مربّع الموافقة في كل مرّة (لا تذكّر) للتأكّد من قبول المستخدم
+  _termsRead.freead=false;   // يجب قراءة الشروط قبل تفعيل الموافقة
   box.innerHTML='<p style="font-size:13px;color:#475569;margin:0 0 10px">قسم مجاني بالكامل لدعم أصحاب المهن والأسر المنتجة — بلا رسوم ولا عمولة.</p>'
-    +'<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="faAgree" class="fa-term-chk" onchange="faTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openFreeAdTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label></div>'
+    +'<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="faAgree" class="fa-term-chk" disabled onchange="faTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openFreeAdTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label><div class="terms-readhint" id="faReadHint">اضغط «شروط النشر» واقرأها حتى النهاية لتتمكّن من الموافقة</div></div>'
     +'<div style="color:#E11D48;font-size:12px;font-weight:700;margin-top:10px;background:rgba(225,29,72,.08);padding:9px 12px;border-radius:10px">ملاحظة: قسم مهن وخدمات لا يتضمّن الإعلان عن الشقق والسيارات والمُعدات.</div>';
 }
 function openFreeAdModal() {
@@ -2607,9 +2607,17 @@ function requireLogin(){
   return false;
 }
 
-/* ===== الموافقة على شروط النشر: مربّع ✓ إلزامي في كل مرّة ===== */
-// نافذة عرض الشروط الكاملة (تُستخدم من الرابط البرتقالي في كل فورمات النشر)
-function openTermsModal(html, title){
+/* ===== الموافقة على شروط النشر: مربّع ✓ إلزامي + لا يُفعَّل إلا بعد قراءة الشروط ===== */
+var _termsRead = { sell:false, partner:false, freead:false };
+function markTermsRead(form){
+  _termsRead[form]=true;
+  var map={ sell:['sellAgree','sellReadHint'], partner:['partnerAgree','partnerReadHint'], freead:['faAgree','faReadHint'] };
+  var m=map[form]; if(!m) return;
+  var cb=document.getElementById(m[0]); if(cb) cb.disabled=false;
+  var h=document.getElementById(m[1]); if(h) h.style.display='none';
+}
+// نافذة الشروط — لا تُفعّل الموافقة إلا بعد التمرير حتى نهايتها (قراءة فعلية)
+function openTermsModal(html, title, onRead){
   var m=document.getElementById('pubTermsOverlay');
   if(!m){
     m=document.createElement('div'); m.id='pubTermsOverlay'; m.className='pub-terms-ov';
@@ -2618,28 +2626,38 @@ function openTermsModal(html, title){
     m.addEventListener('click',function(e){ if(e.target===m) closeTermsModal(); });
   }
   document.getElementById('pubTermsTitle').textContent=title||'شروط النشر وسياسة الخصوصية';
-  document.getElementById('pubTermsBody').innerHTML=html||'';
+  var body=document.getElementById('pubTermsBody');
+  body.innerHTML=html||''; body.scrollTop=0; body.onscroll=null;
+  if(onRead){
+    var fire=function(){ if(body.scrollTop+body.clientHeight >= body.scrollHeight-14){ body.onscroll=null; onRead(); } };
+    body.onscroll=fire;
+    setTimeout(function(){ if(body.scrollHeight <= body.clientHeight+14){ onRead(); } }, 90); // محتوى قصير = مقروء
+  }
   m.classList.add('show');
 }
 function closeTermsModal(){ var m=document.getElementById('pubTermsOverlay'); if(m) m.classList.remove('show'); }
 window.openTermsModal=openTermsModal; window.closeTermsModal=closeTermsModal;
-// يبني HTML قائمة الشروط لعرضها داخل النافذة
 function termsListHTML(title, terms){
   return '<div class="terms-modal-h">'+esc(title)+'</div><ul class="terms-modal-list">'+terms.map(function(t){ return '<li>'+t+'</li>'; }).join('')+'</ul>';
 }
-
+// شروط عامّة للفئات التي لا تملك شروطاً مفصّلة (محلات/أراضي/معدات...)
+var GENERAL_SELL_TERMS=[
+  'كل المعلومات والصور التي أقدّمها <b>صحيحة وحقيقية</b>، والإعلان ملكي أو أنا مفوّض رسمياً بعرضه.',
+  'أتحمّل كامل المسؤولية القانونية عن إعلاني، ومنصّة «تم» <b>وسيط إعلاني فقط</b> لا تتحمّل أي نزاع أو ضرر بين الطرفين.',
+  'لا أنشر محتوى مخالفاً للقانون أو الآداب العامة أو منتجات مجهولة المصدر.',
+  'للإدارة الحقّ في مراجعة الإعلان أو تعديله أو رفضه أو حذفه، وقد تتغيّر الشروط وتسري فور نشرها.'
+];
 var _sellTermsModalHTML='';
-function openSellTermsModal(){ if(_sellTermsModalHTML) openTermsModal(_sellTermsModalHTML); }
+function openSellTermsModal(){ openTermsModal(_sellTermsModalHTML, 'شروط النشر وسياسة الخصوصية', function(){ markTermsRead('sell'); }); }
 window.openSellTermsModal=openSellTermsModal;
 
 function renderSellTerms(){
   var sel=document.getElementById('sellCat'); var box=document.getElementById('sellTerms'); if(!sel||!box) return;
   var cat=sel.value, terms=SELL_TERMS[cat]||[];
   var label=getCat(cat)?getCat(cat).label:'';
-  _sellTermsModalHTML = terms.length ? termsListHTML('شروط نشر إعلان «'+label+'»', terms) : '';
-  if(!terms.length){ box.innerHTML=''; sellTermsCheck(); return; }
-  // يجب وضع ✓ على مربّع الموافقة في كل مرّة (لا تذكّر) للتأكّد من قبول المستخدم
-  box.innerHTML='<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="sellAgree" class="sell-term-chk" onchange="sellTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openSellTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label></div>';
+  _sellTermsModalHTML = terms.length ? termsListHTML('شروط نشر إعلان «'+label+'»', terms) : termsListHTML('شروط النشر العامّة', GENERAL_SELL_TERMS);
+  _termsRead.sell=false;   // إعادة الضبط عند تغيير الفئة — يجب قراءة شروط الفئة الجديدة
+  box.innerHTML='<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="sellAgree" class="sell-term-chk" disabled onchange="sellTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openSellTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label><div class="terms-readhint" id="sellReadHint">اضغط «شروط النشر» واقرأها حتى النهاية لتتمكّن من الموافقة</div></div>';
   sellTermsCheck();
 }
 function sellTermsCheck(){
@@ -2739,13 +2757,13 @@ var PARTNER_TERMS=[
   'أتحمّل مسؤولية <b>التفاوض والتحقّق من الشريك</b> وتوثيق الاتفاقات قانونياً قبل أي التزام مالي.',
   'للإدارة الحقّ في مراجعة الطلب أو تعديله أو رفضه أو حذفه، وقد تتغيّر الشروط وتسري فور نشرها.'
 ];
-function openPartnerTermsModal(){ openTermsModal(termsListHTML('شروط «ابحث عن شريك»', PARTNER_TERMS)); }
+function openPartnerTermsModal(){ openTermsModal(termsListHTML('شروط «ابحث عن شريك»', PARTNER_TERMS), 'شروط النشر وسياسة الخصوصية', function(){ markTermsRead('partner'); }); }
 window.openPartnerTermsModal=openPartnerTermsModal;
 function renderPartnerTerms(){
   var box=document.getElementById('partnerTerms'); if(!box) return;
-  // يجب وضع ✓ على مربّع الموافقة في كل مرّة (لا تذكّر) للتأكّد من قبول المستخدم
+  _termsRead.partner=false;   // يجب قراءة الشروط قبل تفعيل الموافقة
   box.innerHTML='<p style="font-size:13px;color:#475569;margin:0 0 10px">قسم مجاني لربط أصحاب الأفكار والأصول ورؤوس الأموال بالشركاء.</p>'
-    +'<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="partnerAgree" class="partner-term-chk" onchange="partnerTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openPartnerTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label></div>';
+    +'<div class="terms-agree-one"><label class="fa-term"><input type="checkbox" id="partnerAgree" class="partner-term-chk" disabled onchange="partnerTermsCheck()"><span>أوافق على <a class="terms-link" onclick="event.preventDefault();event.stopPropagation();openPartnerTermsModal()">شروط النشر وسياسة الخصوصية</a> لطلبك تم</span></label><div class="terms-readhint" id="partnerReadHint">اضغط «شروط النشر» واقرأها حتى النهاية لتتمكّن من الموافقة</div></div>';
 }
 function openPartnerModal(){
   if(!requireLogin()) return;
