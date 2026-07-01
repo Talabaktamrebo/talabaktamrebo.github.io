@@ -662,10 +662,11 @@
     document.getElementById('acpEdit').style.display = 'none';
     if (window._acTab) window._acTab('profile');
     document.getElementById('acProfOverlay').classList.add('show');
+    _acRemember('profile');
   };
   window._acEditProfile = function () { document.getElementById('acpView').style.display = 'none'; document.getElementById('acpEdit').style.display = ''; };
   window._acCancelEdit = function () { document.getElementById('acpEdit').style.display = 'none'; document.getElementById('acpView').style.display = ''; document.getElementById('acProfMsg').className = 'ac-msg'; };
-  window._acCloseProfile = function () { var o = document.getElementById('acProfOverlay'); if (o) o.classList.remove('show'); };
+  window._acCloseProfile = function () { var o = document.getElementById('acProfOverlay'); if (o) o.classList.remove('show'); _acForget(); };
 
   /* ---------- صورة الحساب: أوّل حرف من الاسم دائماً (لا رفع صور) ---------- */
   window._acRenderAvatar = function () {
@@ -730,17 +731,22 @@
       + '</div>';
     document.body.appendChild(ov);
   })();
-  window._acCloseList = function () { var o = document.getElementById('acListOverlay'); if (o) o.classList.remove('show'); };
+  // تذكّر النافذة المفتوحة لإعادة فتحها بعد الريفريش (البقاء في نفس المكان)
+  function _acRemember(name){ try{ sessionStorage.setItem('tam_open_overlay', name); }catch(e){} }
+  function _acForget(){ try{ sessionStorage.removeItem('tam_open_overlay'); }catch(e){} }
+  window._acCloseList = function () { var o = document.getElementById('acListOverlay'); if (o) o.classList.remove('show'); _acForget(); };
   window._acOpenFav = function () {
     document.getElementById('acListTitle').textContent = 'المفضلة';
     _acRenderFav(document.getElementById('acListBody'));
     document.getElementById('acListOverlay').classList.add('show');
+    _acRemember('fav');
   };
   window._acOpenChats = function () {
     if (!_user) { window._acOpenAuth(); return; }
     document.getElementById('acListTitle').textContent = 'محادثاتي';
     var body = document.getElementById('acListBody'); body.innerHTML = '<div class="ac-empty">جارٍ التحميل...</div>';
     document.getElementById('acListOverlay').classList.add('show');
+    _acRemember('chats');
     _acRenderMyChatsPane(body);
   };
   // ===== طلباتي (حجز/شراء) — متابعة حالة الطلب =====
@@ -781,6 +787,7 @@
     document.getElementById('acListTitle').textContent = 'طلباتي';
     var body = document.getElementById('acListBody'); body.innerHTML = '<div class="ac-empty">جارٍ التحميل...</div>';
     document.getElementById('acListOverlay').classList.add('show');
+    _acRemember('requests');
     _acRenderRequests(body);
   };
   window._acSaveProfile = async function () {
@@ -1072,6 +1079,18 @@
       try {
         var oc = JSON.parse(sessionStorage.getItem('tt_open_chat') || 'null');
         if (oc) setTimeout(function () { window.openChat(oc.adId); }, 350);
+      } catch (e) {}
+    }
+    // إعادة فتح النافذة التي كان فيها (طلباتي/المفضلة/محادثاتي/الملف) بعد الريفريش
+    if (!_recoveryInUrl) {
+      try {
+        var ov = sessionStorage.getItem('tam_open_overlay');
+        if (ov) setTimeout(function () {
+          if (ov === 'fav' && window._acOpenFav) window._acOpenFav();
+          else if (_user && ov === 'requests' && window._acOpenRequests) window._acOpenRequests();
+          else if (_user && ov === 'chats' && window._acOpenChats) window._acOpenChats();
+          else if (_user && ov === 'profile' && window._acOpenProfile) window._acOpenProfile();
+        }, 450);
       } catch (e) {}
     }
   });
