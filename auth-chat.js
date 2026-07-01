@@ -236,7 +236,24 @@
     + '#acListOverlay .ac-close{position:static;flex-shrink:0}'
     + '.ac-sheet-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;background:#f8fafc}'
     + '.ac-sheet-body .acp-listitem{background:#fff}'
-    + '@media(min-width:600px){#acListOverlay{padding:16px;align-items:center}.ac-sheet-card{height:86dvh;max-height:780px;border-radius:18px}}';
+    + '@media(min-width:600px){#acListOverlay{padding:16px;align-items:center}.ac-sheet-card{height:86dvh;max-height:780px;border-radius:18px}}'
+    /* بطاقات «طلباتي» */
+    + '.req-card{background:#fff;border:1px solid #eef2f7;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.04)}'
+    + '.req-head{display:flex;align-items:center;gap:11px}'
+    + '.req-img{width:52px;height:52px;border-radius:11px;object-fit:cover;flex-shrink:0}'
+    + '.req-type{font-size:.72rem;font-weight:800;color:#F6921E;background:#fff7ed;display:inline-block;padding:2px 9px;border-radius:20px;margin-bottom:3px}'
+    + '.req-title{font-size:.95rem;font-weight:800;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+    + '.req-date{font-size:.72rem;color:#94a3b8;font-weight:600;flex-shrink:0}'
+    + '.req-steps{display:flex;align-items:center;margin-top:14px}'
+    + '.req-step{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;width:64px;text-align:center}'
+    + '.req-dot{width:26px;height:26px;border-radius:50%;background:#e5e9f0;color:#94a3b8;font-size:.8rem;font-weight:800;display:flex;align-items:center;justify-content:center}'
+    + '.req-slbl{font-size:.66rem;font-weight:700;color:#94a3b8;line-height:1.3}'
+    + '.req-line{flex:1;height:3px;background:#e5e9f0;border-radius:3px;margin:0 -6px;margin-bottom:19px}'
+    + '.req-step.done .req-dot,.req-step.cur .req-dot{background:#16a34a;color:#fff}'
+    + '.req-step.cur .req-dot{background:#F6921E}'
+    + '.req-step.done .req-slbl,.req-step.cur .req-slbl{color:#0f172a}'
+    + '.req-wa{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;background:#16a34a;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem;padding:11px;border-radius:12px}'
+    + '.req-rejected{margin-top:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:.8rem;padding:10px 12px;border-radius:11px;text-align:center}';
   var st2 = document.createElement('style'); st2.textContent = css2; document.head.appendChild(st2);
 
   /* ---------- 2) حقن DOM ---------- */
@@ -723,6 +740,45 @@
     var body = document.getElementById('acListBody'); body.innerHTML = '<div class="ac-empty">جارٍ التحميل...</div>';
     document.getElementById('acListOverlay').classList.add('show');
     _acRenderMyChatsPane(body);
+  };
+  // ===== طلباتي (حجز/شراء) — متابعة حالة الطلب =====
+  function _reqCard(b) {
+    var isSale = b.deal_type === 'sale';
+    var typeLbl = isSale ? 'طلب شراء' : 'طلب حجز';
+    var st = b.status || 'pending';
+    var idx = st === 'confirmed' ? 3 : st === 'reserved' ? 2 : st === 'rejected' ? -1 : 1;
+    var steps = ['بانتظار التدقيق', 'قيد المعالجة', 'تمت الموافقة'];
+    var parts = steps.map(function (s, i) {
+      var n = i + 1, cls = 'req-step' + (idx > 0 && n < idx ? ' done' : '') + (n === idx ? ' cur' : '');
+      var dot = (idx > 0 && (n < idx || (n === idx && idx === 3))) ? '✓' : n;
+      return '<div class="' + cls + '"><span class="req-dot">' + dot + '</span><span class="req-slbl">' + s + '</span></div>';
+    });
+    var stepsHtml = parts.join('<span class="req-line"></span>');
+    var extra = '';
+    if (st === 'confirmed') extra = '<a class="req-wa" href="https://wa.me/963983127483?text=' + encodeURIComponent('مرحباً، بخصوص طلبي: ' + (b.ad_title || '')) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.6-.9-2.2-.2-.6-.5-.5-.6-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3"/></svg> تواصل عبر واتساب</a>';
+    else if (st === 'rejected') extra = '<div class="req-rejected">تعذّر قبول هذا الطلب — تواصل مع الإدارة للاستفسار.</div>';
+    var img = b.ad_image ? '<img class="req-img" src="' + esc(b.ad_image) + '" alt="">' : '';
+    return '<div class="req-card">'
+      + '<div class="req-head">' + img + '<div style="flex:1;min-width:0"><div class="req-type">' + typeLbl + '</div><div class="req-title">' + esc(b.ad_title || 'إعلان') + '</div></div><span class="req-date">' + fmtTime(b.created_at) + '</span></div>'
+      + (idx < 0 ? '' : '<div class="req-steps">' + stepsHtml + '</div>')
+      + extra
+      + '</div>';
+  }
+  async function _acRenderRequests(box) {
+    box = box || document.getElementById('acListBody'); if (!box) return;
+    if (!_user) { box.innerHTML = '<div class="ac-empty">سجّل الدخول لعرض طلباتك</div>'; return; }
+    box.innerHTML = '<div class="ac-empty">جارٍ التحميل...</div>';
+    var r = await sb.from('bookings').select('*').eq('user_id', _user.id).order('created_at', { ascending: false });
+    if (r.error) { box.innerHTML = '<div class="ac-empty">تعذّر التحميل</div>'; return; }
+    if (!r.data || !r.data.length) { box.innerHTML = '<div class="ac-empty">لا توجد طلبات بعد.<br>طلبات الحجز والشراء ستظهر هنا مع حالتها.</div>'; return; }
+    box.innerHTML = r.data.map(_reqCard).join('');
+  }
+  window._acOpenRequests = function () {
+    if (!_user) { window._acOpenAuth(); return; }
+    document.getElementById('acListTitle').textContent = 'طلباتي';
+    var body = document.getElementById('acListBody'); body.innerHTML = '<div class="ac-empty">جارٍ التحميل...</div>';
+    document.getElementById('acListOverlay').classList.add('show');
+    _acRenderRequests(body);
   };
   window._acSaveProfile = async function () {
     var first = document.getElementById('acProfName').value.trim();

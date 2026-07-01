@@ -274,6 +274,10 @@ var _splashShownAt = Date.now();
       <span class="sale-pill" style="margin-right:auto">SALE</span>
     </button>
     <div class="menu-divider"></div>
+    <button class="menu-item" onclick="closeMenu();window._acOpenRequests&&window._acOpenRequests()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      طلباتي
+    </button>
     <button class="menu-item" onclick="closeMenu();window._acOpenFav&&window._acOpenFav()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
       المفضلة
@@ -806,7 +810,7 @@ var _splashShownAt = Date.now();
 <script src="supabase-config.js?v=28"></script>
 <script src="ui.js?v=28"></script>
 <script src="app.js?v=156"></script>
-<script src="auth-chat.js?v=104"></script>
+<script src="auth-chat.js?v=105"></script>
 <script src="booking.js?v=28"></script>
 <script src="auction.js?v=76"></script>
 <!-- Sell Modal (عندك شي تبيعه → فورم ثم واتساب) -->
