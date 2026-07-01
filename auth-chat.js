@@ -254,7 +254,8 @@
     + '.req-step.done .req-slbl,.req-step.cur .req-slbl{color:#0f172a}'
     + '.req-wa{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;background:#16a34a;color:#fff;text-decoration:none;font-weight:800;font-size:.9rem;padding:11px;border-radius:12px}'
     + '.req-rejected{margin-top:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:.8rem;padding:10px 12px;border-radius:11px;text-align:center}'
-    + '.req-approved{margin-top:12px;background:#f0fdf4;color:#15803d;font-weight:800;font-size:.85rem;padding:11px 12px;border-radius:11px;text-align:center}';
+    + '.req-approved{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;background:#f0fdf4;color:#15803d;font-weight:800;font-size:.85rem;padding:11px 12px;border-radius:11px;text-align:center}'
+    + '.req-approved svg{width:18px;height:18px;flex-shrink:0}';
   var st2 = document.createElement('style'); st2.textContent = css2; document.head.appendChild(st2);
 
   /* ---------- 2) حقن DOM ---------- */
@@ -757,7 +758,7 @@
     var stepsHtml = parts.join('<span class="req-line"></span>');
     var _waBtn = '<a class="req-wa" href="https://wa.me/963983127483?text=' + encodeURIComponent('مرحباً، بخصوص طلبي: ' + (b.ad_title || '')) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.6.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.4-1.5-.9-.8-1.5-1.8-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.6-1.6-.9-2.2-.2-.6-.5-.5-.6-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.6-.3"/></svg> التواصل مع الإدارة</a>';
     var extra = '';
-    if (st === 'confirmed') extra = '<div class="req-approved">✅ تمت الموافقة — ستتواصل معك الإدارة قريباً.</div>';
+    if (st === 'confirmed') extra = '<div class="req-approved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>تمت الموافقة — ستتواصل معك الإدارة قريباً.</span></div>';
     else if (st === 'rejected') extra = '<div class="req-rejected">تعذّر قبول هذا الطلب.</div>' + _waBtn;
     var img = b.ad_image ? '<img class="req-img" src="' + esc(b.ad_image) + '" alt="">' : '';
     return '<div class="req-card">'
