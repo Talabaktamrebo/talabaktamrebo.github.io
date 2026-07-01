@@ -1934,8 +1934,8 @@ textarea.form-input{resize:vertical;min-height:90px}
   .l-specs::-webkit-scrollbar{display:none}
   .l-specs-inner{animation:none !important;transform:none !important}
 }
-/* الشبكة المزدوجة الصغيرة (نتائج البحث/الأقسام): إخفاء المرافق لتفادي الازدحام */
-.listings-grid .l-specs{display:none !important}
+/* صفحة الأقسام/القوائم: أظهِر شريط المرافق (بيع وإيجار) على اللابتوب مع تحريكه عند المرور */
+@media(min-width:1024px){.listings-grid .l-specs{display:block !important}}
 /* الموبايل: لا تُعرض المرافق على أي كرت (تظهر في صفحة الإعلان فقط) */
 @media(max-width:1023px){.l-specs{display:none !important}}
 /* قلب متناسب على الكروت المدمجة (موبايل) */
