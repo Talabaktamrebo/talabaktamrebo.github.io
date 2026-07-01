@@ -498,6 +498,8 @@ function renderCard(l,i,mode){
 
   // ===== المرافق بالشكل الأصلي (SVG رمادي صغير) كشريط يتحرّك عند المرور إن كثُرت =====
   let _pills='';
+  const _cp=(ic,txt)=> txt ? `<div class="l-spec">${ic}<span>${esc(String(txt))}</span></div>` : '';
+  const _cpb=(ic,label,on)=> on ? `<div class="l-spec">${ic}<span>${esc(label)}</span></div>` : '';
   if(apt){
     const ps=[];
     if(l.area)      ps.push(`<div class="l-spec">${ICON.area}<span>${l.area} م²</span></div>`);
@@ -506,29 +508,37 @@ function renderCard(l,i,mode){
     if(l.kitchens)  ps.push(`<div class="l-spec">${ICON.kitchen}<span>${l.kitchens}</span></div>`);
     if(l.living)    ps.push(`<div class="l-spec">${ICON.living}<span>${l.living}</span></div>`);
     if(l.balconies) ps.push(`<div class="l-spec">${ICON.balcony}<span>${l.balconies}</span></div>`);
+    ps.push(_cp(AIC.layers,l.aptFloor), _cp(AIC.sofa,l.aptFurnished), _cpb(AIC.sun,'شمسية',l.aptSolar), _cpb(AIC.elevator,'مصعد',l.aptElevator), _cpb(AIC.parking,'كراج',l.aptGarage), _cpb(AIC.drop,'خزان',l.aptWaterTank), _cpb(AIC.wifi,'إنترنت',l.aptInternet));
     _pills=ps.join('');
   }else if(shop){
     const ps=[];
     if(l.shopArea)   ps.push(`<div class="l-spec">${ICON.area}<span>${l.shopArea} م²</span></div>`);
     if(l.shopFloor)  ps.push(`<div class="l-spec">${ICON.storage}<span>${esc(l.shopFloor)}</span></div>`);
     if(l.shopFronts) ps.push(`<div class="l-spec">${ICON.model}<span>${l.shopFronts} واجهة</span></div>`);
+    ps.push(_cp(AIC.layout,l.shopFit), _cpb(AIC.wind,'مكيّف',l.shopAc), _cpb(AIC.box,'مستودع',l.shopStorage), _cpb(AIC.drop,'حمّام',l.shopBathroom), _cpb(AIC.glass,'واجهة زجاج',l.shopGlass), _cpb(AIC.parking,'موقف',l.shopParking), _cpb(AIC.zap,'كهرباء صناعية',l.shopPower3));
     _pills=ps.join('');
   }else if(farm){
     const ps=[];
     if(l.farmType)  ps.push(`<div class="l-spec">${ICON.storage}<span>${esc(l.farmType)}</span></div>`);
     if(l.farmArea)  ps.push(`<div class="l-spec">${ICON.area}<span>${l.farmArea} م²</span></div>`);
     if(l.farmTrees) ps.push(`<div class="l-spec">${ICON.tree}<span>${l.farmTrees} شجرة</span></div>`);
+    ps.push(_cp(AIC.file,l.landOwnership), _cpb(AIC.zap,'كهرباء',l.landElectricity), _cpb(AIC.drop,'ماء',l.landWater), _cpb(AIC.road,'طريق',l.landRoad), _cpb(AIC.fence,'مسوّرة',l.landFenced), _cpb(AIC.shield,'رخصة',l.landPermit));
     _pills=ps.join('');
   }else if(partner){
     const ps=[];
     if(l.partnerSector) ps.push(`<div class="l-spec">${ICON.storage}<span>${esc(l.partnerSector)}</span></div>`);
     if(l.partnerSeek)   ps.push(`<div class="l-spec">${ICON.model}<span>يطلب: ${esc(l.partnerSeek)}</span></div>`);
     _pills=ps.join('');
-  }else if(!equip && !freead && !partner){
+  }else if(equip){
+    const ps=[];
+    ps.push(_cp(AIC.wrench,l.equipType), _cp(AIC.tag,l.equipBrand), _cp(AIC.cal,l.equipYear), _cp(AIC.shield,l.equipCondition), _cp(AIC.fuel,l.equipFuel), _cp(AIC.clock,l.equipHours?l.equipHours.toLocaleString()+' س':''), _cpb(AIC.user,'مع مشغّل',l.equipOperator));
+    _pills=ps.join('');
+  }else if(!freead && !partner){
     const ps=[];
     if(l.carYear) ps.push(`<div class="l-spec">${ICON.year}<span>${l.carYear}</span></div>`);
     if(l.carColor) ps.push(`<div class="l-spec">${ICON.color}<span>${esc(l.carColor)}</span></div>`);
     if(l.carKm && !rent) ps.push(`<div class="l-spec">${ICON.km}<span>${l.carKm.toLocaleString()}</span></div>`);
+    ps.push(_cp(AIC.gear,l.carGear), _cp(AIC.fuel,l.carFuel), _cp(AIC.tag,l.carCondition), _cp(AIC.car,l.carDrive), _cpb(AIC.shield,'جمارك',l.carCustoms), _cpb(AIC.sun,'فتحة سقف',l.carSunroof), _cpb(AIC.cam,'كاميرا',l.carCamera), _cpb(AIC.screen,'شاشة',l.carScreen));
     _pills=ps.join('');
   }
   const pillsBlock=_pills?`<div class="l-specs"><div class="l-specs-inner">${_pills}</div></div>`:'';
@@ -730,7 +740,7 @@ document.addEventListener('mouseover', function(e){
   var sp=card.querySelector('.l-specs'); if(!sp || sp.dataset.mqDone) return;
   sp.dataset.mqDone='1';
   var inner=sp.querySelector('.l-specs-inner'); if(!inner) return;
-  if(inner.children.length<=3) return;             // 3 مرافق أو أقل: لا تتحرّك
+  if(inner.children.length<=4) return;             // 4 مرافق أو أقل: لا تتحرّك (تتحرّك عند أكثر من 4)
   var over=inner.scrollWidth - sp.clientWidth;      // مقدار التجاوز عن عرض الكرت
   if(over<=4) return;
   inner.style.setProperty('--shift',(over+6)+'px'); // يمشي لآخر المرافق فقط ثم يتوقّف
