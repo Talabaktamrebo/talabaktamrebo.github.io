@@ -107,7 +107,7 @@
     + '.ac-chat-foot{max-width:760px;width:100%;margin:0 auto;box-sizing:border-box}'
     /* الدخول وإنشاء الحساب: تمرير النافذة كاملة (مضمون على كل المتصفّحات) */
     + '#acAuthOverlay{align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px calc(40px + env(safe-area-inset-bottom,0px))}'
-    + '#acAuthOverlay .ac-card{max-height:none;overflow:visible;margin:0 auto;padding:16px 20px}'
+    + '#acAuthOverlay .ac-card{max-height:none;overflow:visible;margin:auto;padding:16px 20px}'
     /* اللابتوب فقط: توسيط نافذة الدخول/الإنشاء عمودياً في منتصف الشاشة (الموبايل يبقى كما هو) */
     + '@media(min-width:1024px){#acAuthOverlay{align-items:center}#acAuthOverlay .ac-card{margin:auto}}'
     /* سبنر الترحيب (يظهر لحظة الدخول/الإنشاء قبل إغلاق الفورم) */

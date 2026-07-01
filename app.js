@@ -34,6 +34,7 @@ function mapRow(d) {
     partnerOffer: d.partner_offer || '', partnerSector: d.partner_sector || '', partnerSeek: d.partner_seek || '', partnerType: d.partner_type || '',
     rating: (d.rating == null ? null : Number(d.rating)),
     oldPrice: (d.old_price == null ? null : Number(d.old_price)),
+    monthlyPrice: (d.monthly_price == null ? null : Number(d.monthly_price)),
     video: d.video_url || '',
     isAuction: !!d.is_auction,
     auctionStart: (d.auction_start == null ? null : Number(d.auction_start)),
@@ -1877,7 +1878,9 @@ function gathernDetailHTML(l, cat, imgs, badgeClass){
       +   '<button class="gd-btn primary" onclick="handleBookClick()">احجز الآن</button>'
       + '</div>'
       + '<div id="gdMonthly" style="display:none">'
-      +   '<div class="gd-price agreed">السعر يُتفق عليه</div>'
+      +   (l.monthlyPrice>0
+            ? '<div class="gd-price">'+fmtPrice(l.monthlyPrice,true)+' <small>/ شهر</small></div>'+usdHTML(l.monthlyPrice)
+            : '<div class="gd-price agreed">السعر يُتفق عليه</div>')
       +   '<div class="gd-dates">اختر المدّة ومعلوماتك في الخطوة التالية</div>'
       +   '<button class="gd-btn primary" onclick="window.openBooking(\''+l.id+'\',\'monthly\')">احجز شهرياً</button>'
       + '</div>'
@@ -2756,6 +2759,7 @@ function _sckRow(title,html){ return `<div class="sell-field" style="grid-column
 function renderSellFields(){
   const c = getCat(document.getElementById('sellCat').value), t = c?c.type:'';
   let h='';
+  if(c && isRent(c.id)) h += _sf('sellMonthlyPrice','السعر الشهري (اختياري)','type="number" min="0" placeholder="اتركه فارغاً = يُتفق عليه"');
   if(t==='apartment'){
     h = _sf('sellRooms','غرف النوم','type="number" min="0" value="1"')
       + _sf('sellBaths','الحمامات','type="number" min="0" value="1"')
@@ -2824,7 +2828,8 @@ function submitSell(){
   if(_allT.length && _okT.length!==_allT.length){ (window.uiToast||window.alert)('يرجى قراءة الشروط والموافقة عليها لإكمال الإرسال','error'); return; }
   const lines=['📋 إعلان جديد عبر طلبك تم', 'الفئة: '+c.label, 'العنوان: '+title, 'المدينة: '+city];
   if(hood) lines.push('الحي: '+hood);
-  lines.push('السعر: '+price+' ل.س');
+  lines.push('السعر: '+price+' ل.س'+(isRent(c.id)?' / يوم':''));
+  { const mp=_sv('sellMonthlyPrice'); if(mp) lines.push('السعر الشهري: '+mp+' ل.س'); }
   const t=c.type, add=(lbl,id)=>{ const x=_sv(id); if(x) lines.push(lbl+': '+x); };
   const chk=(lbl,id)=>{ if(document.getElementById(id)?.checked) lines.push(lbl+': نعم'); };
   if(t==='apartment'){ add('غرف النوم','sellRooms'); add('الحمامات','sellBaths'); add('المساحة م²','sellArea'); add('المطابخ','sellKitchens'); add('الشرفات','sellBalconies'); add('غرف المعيشة','sellLiving'); add('المستودعات','sellStorage'); add('الطابق','sellAptFloor'); add('الفرش','sellAptFurnished'); add('التدفئة','sellAptHeating'); add('الإطلالة','sellAptView'); add('عمر البناء','sellAptAge'); chk('طاقة شمسية','sellAptSolar'); chk('مصعد','sellAptElevator'); chk('كراج/موقف','sellAptGarage'); chk('خزان ماء','sellAptWaterTank'); chk('إنترنت/ألياف','sellAptInternet'); }
