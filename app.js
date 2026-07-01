@@ -3045,6 +3045,47 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowRight')lbNav(-1);
 });
 
+/* ===== قفل تمرير الخلفية عند فتح أي نافذة/أوفرلاي ===== */
+(function(){
+  // أي عنصر أوفرلاي/نافذة (نطابق بالاسم ثم نتأكّد أنه ظاهر فعلاً على الشاشة)
+  var SEL = '[class*="overlay"],[class*="Overlay"],[id*="Overlay"],.pub-terms-ov,.u-ov,.ac-chat,.ac-terms-ov,.ac-spin-ov,.filter-sheet,#lightbox';
+  function shown(el){
+    if(!el) return false;
+    var cs=getComputedStyle(el);
+    if(cs.display==='none'||cs.visibility==='hidden'||parseFloat(cs.opacity||'1')===0) return false;
+    if(cs.pointerEvents==='none' && parseFloat(cs.opacity||'1')<0.05) return false;
+    var r=el.getBoundingClientRect();
+    if(r.width<=1||r.height<=1) return false;
+    // متقاطع مع الشاشة فعلاً (يستبعد المنزلق خارجها بالـ transform)
+    return r.bottom>4 && r.top<innerHeight-4 && r.right>4 && r.left<innerWidth-4;
+  }
+  function anyOpen(){
+    var els=document.querySelectorAll(SEL);
+    for(var i=0;i<els.length;i++){ if(shown(els[i])) return true; }
+    return false;
+  }
+  var _raf=null;
+  function evaluate(){ _raf=null; document.documentElement.classList.toggle('scroll-lock', anyOpen()); }
+  function schedule(){ if(_raf) return; _raf=requestAnimationFrame(evaluate); }
+  function relevant(muts){
+    for(var i=0;i<muts.length;i++){
+      var m=muts[i], t=m.target;
+      if(t && t.nodeType===1 && t.matches && t.matches(SEL)) return true;   // تغيّر صنف/ستايل أوفرلاي
+      var an=m.addedNodes||[];
+      for(var j=0;j<an.length;j++){ var n=an[j];
+        if(n.nodeType===1 && ((n.matches&&n.matches(SEL))||(n.querySelector&&n.querySelector(SEL)))) return true; // أوفرلاي جديد
+      }
+    }
+    return false;
+  }
+  function start(){
+    var mo=new MutationObserver(function(muts){ if(relevant(muts)) schedule(); });
+    mo.observe(document.body,{attributes:true,attributeFilter:['class','style'],subtree:true,childList:true});
+    schedule();
+  }
+  if(document.body) start(); else document.addEventListener('DOMContentLoaded',start);
+})();
+
 // ===== SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
