@@ -160,12 +160,19 @@ const LOC_COORDS={
 const MONTHS=['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
 const DAYS=['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
 
-const HERO_IMGS=[
+let HERO_IMGS=[
   'hero1.webp',
   'hero2.webp',
-  'hero3.webp',
   'hero3.webp'
 ];
+// صور الهيرو من الأدمن (settings.hero_images) — تحلّ محلّ الافتراضية إن وُجدت
+async function loadHeroImages(){
+  try{
+    const { data } = await supabaseClient.from('settings').select('data').eq('key','hero_images').maybeSingle();
+    const imgs = data && data.data && Array.isArray(data.data.images) ? data.data.images.filter(Boolean) : null;
+    if(imgs && imgs.length){ HERO_IMGS = imgs; heroIdx=0; initHero(); }
+  }catch(e){}
+}
 
 const APT_IMGS=[
   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop',
@@ -3014,7 +3021,7 @@ function usdHTML(syp){
   return '<div class="det-usd">'+usdFmt(usd)+' دولار</div>';
 }
 window.loadUsdRate = loadUsdRate;
-if (USE_FIREBASE) { loadUsdRate(); }
+if (USE_FIREBASE) { loadUsdRate(); loadHeroImages(); }
 
 if (USE_FIREBASE) {
   // قراءة واحدة عند فتح الصفحة من Supabase
